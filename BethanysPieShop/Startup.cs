@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using BethanysPieShop.Models;
-
+using Microsoft.AspNetCore.Identity;
 
 namespace BethanysPieShop
 {
@@ -29,6 +29,10 @@ namespace BethanysPieShop
 
             // Registering services for EF
             services.AddDbContext<AppDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("BethanysPieShopConnection")));
+            //Register identity services
+            services.AddDefaultIdentity<IdentityUser>().AddEntityFrameworkStores<AppDbContext>();
+            
+            
             // Register the service with it's interface
             // With add scoped an instance is created at each call and remains until it is out of scope
             //services.AddScoped<IPieRepository, MockPieRepository>();
@@ -47,6 +51,9 @@ namespace BethanysPieShop
 
             //Adding support for MVC 
             services.AddControllersWithViews();
+
+            //Indentity requires Razor Pages
+            services.AddRazorPages();
         }
 
 
@@ -71,12 +78,18 @@ namespace BethanysPieShop
 
             // UseRouting and UseEndpoints middleware enable convention based built-in routing
             app.UseRouting();
- 
+            // Middleware for .NET Authentication
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                   name: "default",
                   pattern: "{controller=Home}/{action=Index}/{id?}");
+                // Add endpoints for Identity Login/Logout
+                endpoints.MapRazorPages();
 
             });
         }
